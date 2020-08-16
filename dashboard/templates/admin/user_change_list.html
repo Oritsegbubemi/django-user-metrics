@@ -10,7 +10,7 @@
     {{ block.super }}
 
     <li>
-        <a class="historylink" href="sendemail/">Send Email</a>
+        <a href="{% url 'email' %}">Send Email</a>
     </li>
-
+    
 {% endblock %}

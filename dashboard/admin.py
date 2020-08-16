@@ -1,9 +1,10 @@
 from django.contrib import admin
 from .models import UserSubscriber
-from django.urls import path
-from django.conf.urls import include, url
-from django.http import HttpResponseRedirect
+from .forms import SendEmailForm
+from django.utils.decorators import method_decorator
 from django.contrib.admin.views.decorators import staff_member_required
+from django.urls import reverse_lazy
+from django.views.generic.edit import FormView
 
 # Register your models here.
 @admin.register(UserSubscriber)
@@ -15,24 +16,26 @@ class UserSubscriberAdmin(admin.ModelAdmin):
     
     actions = ['make_inactive', 'make_active']
 
+    @method_decorator(staff_member_required)
     def make_inactive(self, request, queryset):
         queryset.update(is_active=False)
 
-
+    @method_decorator(staff_member_required)
     def make_active(self, request, queryset):
         queryset.update(is_active=True)
 
 
-    def get_urls(self):
-        urls = super(UserSubscriberAdmin, self).get_urls()
-        my_urls = [
-            path('sendemail/', self.send_email,  name="custom_view"),
-        ]
-        return my_urls + urls
+class SendUserEmails(FormView):
+    template_name = 'admin/send_email.html'
+    form_class = SendEmailForm
+    #success_url = '/thanks/'
+    success_url = reverse_lazy('admin:users_user_changelist')
 
-
-    def send_email(self, request):
-        hello =self.model.objects.values('email')
-        print(hello)
-        self.message_user(request, "Email sent")
-        return HttpResponseRedirect("../")
+    def form_valid(self, form):
+        users = form.cleaned_data['users']
+        subject = form.cleaned_data['subject']
+        message = form.cleaned_data['message']
+        email_users.delay(users, subject, message)
+        user_message = '{0} users emailed successfully!'.format(form.cleaned_data['users'].count())
+        messages.success(self.request, user_message)
+        return super(SendUserEmails, self).form_valid(form)
