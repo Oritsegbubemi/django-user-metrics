@@ -15,22 +15,15 @@
 
 {% block content %}
 <p>{% blocktrans %}Write your message here{% endblocktrans %}</p>
-<form method="POST" action="{% url 'email' %}">{% csrf_token %}
+<form method="POST" action="{% url 'email' %}">
+    {% csrf_token %}
     <div>
         <div>
             <p>{{ form.users.errors }}</p>
             <p>{{ form.users.label_tag }}</p>
-            <p>
-                {% for user in form.users.initial %}
-                    {{ user.email }}{% if not forloop.last %},&nbsp;{% endif %}
-                {% endfor %}
-            </p>
-            <select name="users" multiple style="display: none">
-                {% for user in form.users.initial %}
-                    <option value="{{ user.email }}" selected>{{ user }}</option>
-                {% endfor %}
-            </select>
+            <p>{{ form.users }}</p>
         </div>
+
         <div>
             <p>{{ form.subject.errors }}</p>
             <p>{{ form.subject.label_tag }}</p>
@@ -42,7 +35,7 @@
             <p>{{ form.message }}</p>
         </div>
         <input type="submit" value="{% trans 'Send message' %}" />
-        <a href="" class="button cancel-link">{% trans "No, take me back" %}</a>
+        <a href="#" class="button cancel-link">{% trans "No, take me back" %}</a>
     </div>
 </form>
 {% endblock %}
