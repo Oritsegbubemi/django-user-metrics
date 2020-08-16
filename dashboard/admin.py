@@ -13,6 +13,7 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import FormView
 from django.core.mail import send_mail
 from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib import messages
 
 
 @admin.register(UserSubscriber)
@@ -36,8 +37,6 @@ class UserSubscriberAdmin(admin.ModelAdmin):
         ]
         return extra_urls + urls
 
-    # JSON endpoint for generating chart data that is used for dynamic loading
-    # via JS.
     def chart_data_endpoint(self, request):
         chart_data = self.chart_data()
         return JsonResponse(list(chart_data), safe=False)
@@ -50,7 +49,7 @@ class UserSubscriberAdmin(admin.ModelAdmin):
             .order_by("-date")
         )
             
-    actions = ['make_inactive', 'make_active', 'send_email1']
+    actions = ['make_inactive', 'make_active']
 
     @method_decorator(staff_member_required)
     def make_inactive(self, request, queryset):
@@ -59,41 +58,24 @@ class UserSubscriberAdmin(admin.ModelAdmin):
     @method_decorator(staff_member_required)
     def make_active(self, request, queryset):
         queryset.update(is_active=True)
-
-    def get_urls(self):
-        urls = super(UserSubscriberAdmin, self).get_urls()
-        my_urls = [
-            path('sendemail1/', self.send_email1,  name="custom_view"),
-        ]
-        return my_urls + urls
-
-    def send_email1(self, request, queryset):
-        hello = queryset.values('email')
-        send_mail(
-            'Subject: User Subcribers',
-            'Helo there, welcome to User Subscribers. Nice to meet you.',
-            'from@example.com',
-            [hello],
-            fail_silently=False,
-        )
-        self.message_user(request, "Email sent")
-
-
     
 
 class SendUserEmails(FormView):
     template_name = 'admin/send_email.html'
     form_class = SendEmailForm
-    success_url = '/thanks/'
-    #success_url = reverse_lazy('admin:users_user_changelist')
-
+    success_url = '/admin/dashboard/usersubscriber/'
 
     def form_valid(self, form):
         users = form.cleaned_data['users']
-        print("Usersss", users)
         subject = form.cleaned_data['subject']
         message = form.cleaned_data['message']
-        email_users.delay(users, subject, message)
+        send_mail(
+            subject,
+            message,
+            'from@example.com',
+            [users],
+            fail_silently=False,
+        )
         user_message = '{0} users emailed successfully!'.format(form.cleaned_data['users'].count())
         messages.success(self.request, user_message)
         return super(SendUserEmails, self).form_valid(form)
