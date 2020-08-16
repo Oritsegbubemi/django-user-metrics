@@ -1,0 +1,10 @@
+(savests) C:\Users\Gbubemi\Documents\#Coding\django-user-metrics>python manage.py shell
+Python 3.7.3 (default, Mar 27 2019, 17:13:21) [MSC v.1915 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> from dashboard.models import UserSubscriber
+>>> from django.utils import timezone
+>>> from datetime import timedelta
+>>> import random
+>>> for i in range(0, 100):
+...     UserSubscriber.objects.create(username=f"User_{i}", email=f"useremail_{i}@email.com", created_at= timezone.now() - timedelta(days=random.randint(0,100)))

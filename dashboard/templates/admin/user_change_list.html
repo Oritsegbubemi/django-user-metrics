@@ -1,0 +1,16 @@
+{% extends "admin/change_list.html" %}
+{% load static %}
+
+{% block content_title  %}
+    <h1>Gbubemi User Subscribers!</h1>
+{% endblock %}
+
+{% block object-tools-items %}
+
+    {{ block.super }}
+
+    <li>
+        <a class="historylink" href="sendemail/">Send Email</a>
+    </li>
+
+{% endblock %}
